@@ -80,7 +80,7 @@ function ShoppingHome() {
     ).then((data) => {
       if (data?.payload?.success) {
         dispatch(fetchCartItems(user?.id));
-        // MAIN CHANGE: Using toast.success()
+        
         toast.success("Product is added to cart"); 
       }
     }).catch(error => {
@@ -97,7 +97,7 @@ function ShoppingHome() {
     if (featureImageList && featureImageList.length > 0) {
         const timer = setInterval(() => {
             setCurrentSlide((prevSlide) => (prevSlide + 1) % featureImageList.length);
-        }, 15000); 
+        }, 4000); 
         return () => clearInterval(timer);
     }
   }, [featureImageList]);
@@ -115,24 +115,24 @@ function ShoppingHome() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Banner Section */}
-      <div className="relative w-full h-[600px] overflow-hidden">
+      <div className="relative w-full h-[550px] overflow-hidden">
         {featureImageList && featureImageList.length > 0
           ? featureImageList.map((slide, index) => (
               <img
                 src={slide?.image}
-                // MAIN CHANGE: Added unique key (prefer ID over index)
                 key={slide?._id || slide?.id || index} 
                 alt={`Banner Image ${index + 1}`} 
                 className={`${
                   index === currentSlide ? "opacity-100" : "opacity-0"
-                } absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000`}
+                } absolute top-0 left-0 w-full h-full  object-cover transition-opacity duration-1000`}
               />
             ))
           : <div className="w-full h-full bg-gray-200 flex items-center justify-center"><p>Loading Banners...</p></div>
            }
         {featureImageList && featureImageList.length > 1 && (
           <>
-            <Button
+            <button
+              id="left-slide-btn"
               variant="outline"
               size="icon"
               onClick={() =>
@@ -142,12 +142,13 @@ function ShoppingHome() {
                     featureImageList.length
                 )
               }
-              className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-white/80 hover:bg-white" 
+              className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-white/80 " 
               aria-label="Previous slide" 
             >
               <ChevronLeftIcon className="w-4 h-4" />
-            </Button>
-            <Button
+            </button>
+            <button
+              id="right-slide-btn"
               variant="outline"
               size="icon"
               onClick={() =>
@@ -158,8 +159,8 @@ function ShoppingHome() {
               className="absolute top-1/2 right-4 transform -translate-y-1/2 bg-white/80 hover:bg-white" 
               aria-label="Next slide" 
             >
-              <ChevronRightIcon className="w-4 h-4" />
-            </Button>
+              <ChevronRightIcon className="w-4 h-4 " />
+            </button>
           </>
         )}
       </div>
@@ -168,12 +169,12 @@ function ShoppingHome() {
       <section className="py-12 bg-gray-50">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-8">
-            Shop by category
+            Shop by Category
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {categoriesWithIcon.map((categoryItem) => (
               <Card
-                // MAIN CHANGE: Added key prop
+               
                 key={categoryItem.id} 
                 onClick={() =>
                   handleNavigateToListingPage(categoryItem, "category")
@@ -250,24 +251,6 @@ export default ShoppingHome;
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import { Button } from "@/components/ui/button";
 // import bannerOne from "../../assets/banner-1.webp";
 // import bannerTwo from "../../assets/banner-2.webp";
 // import bannerThree from "../../assets/banner-3.webp";

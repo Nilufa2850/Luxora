@@ -1,38 +1,50 @@
-import { filterOptions } from "@/config";
+import { filterOptions } from "@/config"; 
 import { Fragment } from "react";
-import { Label } from "../ui/label";
+import { Label } from "../ui/label"; 
 import { Checkbox } from "../ui/checkbox";
 import { Separator } from "../ui/separator";
 
 function ProductFilter({ filters, handleFilter }) {
   return (
-    <div className="bg-background rounded-lg shadow-sm">
+    <div className="bg-background rounded-lg shadow-sm border">
       <div className="p-4 border-b">
-        <h2 className="text-lg font-extrabold">Filters</h2>
+        <h2 className="text-lg font-semibold text-foreground">Filters</h2>
       </div>
       <div className="p-4 space-y-4">
         {Object.keys(filterOptions).map((keyItem) => (
-          <Fragment>
+          <Fragment key={keyItem}> 
             <div>
-              <h3 className="text-base font-bold">{keyItem}</h3>
-              <div className="grid gap-2 mt-2">
-                {filterOptions[keyItem].map((option) => (
-                  <Label className="flex font-medium items-center gap-2 ">
-                    <Checkbox
-                      checked={
-                        filters &&
-                        Object.keys(filters).length > 0 &&
-                        filters[keyItem] &&
-                        filters[keyItem].indexOf(option.id) > -1
-                      }
-                      onCheckedChange={() => handleFilter(keyItem, option.id)}
-                    />
-                    {option.label}
-                  </Label>
-                ))}
+              <h3 className="text-base font-semibold capitalize text-foreground mb-2">{keyItem}</h3>
+              <div className="grid gap-2">
+                {filterOptions[keyItem].map((option) => {
+                  const isChecked = Boolean(
+                    filters && 
+                    filters[keyItem] && 
+                    Array.isArray(filters[keyItem]) &&
+                    filters[keyItem].includes(option.id)
+                  );
+
+                  return (
+                    <Label 
+                      key={option.id} 
+                      htmlFor={`${keyItem}-${option.id}`}
+                      className="flex font-medium items-center gap-2 cursor-pointer text-sm text-muted-foreground hover:text-foreground"
+                    > 
+                      <Checkbox
+                        id={`${keyItem}-${option.id}`} 
+                        checked={isChecked}
+                        onCheckedChange={(checkedState) => {
+                          handleFilter(keyItem, option.id, checkedState);
+                        }}
+                        
+                      />
+                      <span>{option.label}</span>
+                    </Label>
+                  );
+                })}
               </div>
             </div>
-            <Separator />
+            <Separator className="my-4"/> 
           </Fragment>
         ))}
       </div>

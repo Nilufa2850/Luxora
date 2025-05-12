@@ -17,6 +17,7 @@ function ShoppingAccount() {
           <Tabs defaultValue="orders">
             <TabsList>
               <TabsTrigger value="orders">Orders</TabsTrigger>
+              &nbsp;&nbsp;
               <TabsTrigger value="address">Address</TabsTrigger>
             </TabsList>
             <TabsContent value="orders">

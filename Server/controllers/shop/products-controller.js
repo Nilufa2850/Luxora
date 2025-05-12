@@ -1,42 +1,42 @@
+
 const Product = require("../../models/Product");
 
 const getFilteredProducts = async (req, res) => {
   try {
-    const { category = [], brand = [], sortBy = "price-lowtohigh" } = req.query;
+    
+    const categoryQuery = req.query.category || [];
+    const brandQuery = req.query.brand || [];
+    const sortBy = req.query.sortBy || "price-lowtohigh"; 
 
     let filters = {};
 
-    if (category.length) {
-      filters.category = { $in: category.split(",") };
+    
+    if (categoryQuery.length > 0) {
+      filters.category = { $in: Array.isArray(categoryQuery) ? categoryQuery : categoryQuery.split(",") };
     }
 
-    if (brand.length) {
-      filters.brand = { $in: brand.split(",") };
+    
+     if (brandQuery.length > 0) {
+      filters.brand = { $in: Array.isArray(brandQuery) ? brandQuery : brandQuery.split(",") };
     }
 
     let sort = {};
 
     switch (sortBy) {
       case "price-lowtohigh":
-        sort.price = 1;
-
+        sort = { price: 1 };
         break;
       case "price-hightolow":
-        sort.price = -1;
-
+        sort = { price: -1 };
         break;
       case "title-atoz":
-        sort.title = 1;
-
+        sort = { title: 1 };
         break;
-
       case "title-ztoa":
-        sort.title = -1;
-
+        sort = { title: -1 };
         break;
-
       default:
-        sort.price = 1;
+        sort = { price: 1 }; 
         break;
     }
 
@@ -46,11 +46,12 @@ const getFilteredProducts = async (req, res) => {
       success: true,
       data: products,
     });
+
   } catch (e) {
-    console.log(error);
+    console.error("Error in getFilteredProducts:", e); 
     res.status(500).json({
       success: false,
-      message: "Some error occured",
+      message: "Error filtering products!",
     });
   }
 };
@@ -60,21 +61,23 @@ const getProductDetails = async (req, res) => {
     const { id } = req.params;
     const product = await Product.findById(id);
 
-    if (!product)
+    if (!product) {
       return res.status(404).json({
         success: false,
         message: "Product not found!",
       });
-
+    }
+     
     res.status(200).json({
       success: true,
       data: product,
     });
-  } catch (e) {
-    console.log(error);
+
+  } catch (e) { 
+    console.error("Error in getProductDetails:", e); 
     res.status(500).json({
       success: false,
-      message: "Some error occured",
+      message: "Error getting product details!", 
     });
   }
 };

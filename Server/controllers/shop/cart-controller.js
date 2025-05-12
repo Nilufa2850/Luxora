@@ -52,10 +52,10 @@ const addToCart = async (req, res) => {
 };
 
 const fetchCartItems = async (req, res) => {
-  console.log("---fetchCartItems Controller Reached ---");
+  // console.log("---fetchCartItems Controller Reached ---");
   try {
     const { userId } = req.params;
-    console.log("Fetching cart for user ID:", userId);
+    // console.log("Fetching cart for user ID:", userId);
 
     if (!userId) {
       return res.status(400).json({
@@ -68,7 +68,7 @@ const fetchCartItems = async (req, res) => {
       path: "items.productId",
       select: "image title price salePrice",
     });
-    console.log("Cart found in DB:", cart); 
+    // console.log("Cart found in DB:", cart); 
     if (!cart) {
       console.log("No cart found for user, returning 404."); 
       return res.status(404).json({

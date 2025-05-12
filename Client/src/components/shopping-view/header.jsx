@@ -1,12 +1,19 @@
-import { House, LogOut, Menu, ShoppingCart, User } from "lucide-react";
+import { Slack, LogOut, Menu, ShoppingCart, User } from "lucide-react";
 import {
   Link,
   useLocation,
   useNavigate,
   useSearchParams,
 } from "react-router-dom";
-import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
-import { Button } from "../ui/button";
+import { 
+    Sheet, 
+    SheetContent, 
+    SheetTrigger, 
+    SheetHeader, 
+    SheetTitle,   
+    SheetDescription 
+} from "../ui/sheet"; 
+import { Button } from "../ui/button"; 
 import { useDispatch, useSelector } from "react-redux";
 import { shoppingViewHeaderMenuItems } from "@/config";
 import {
@@ -16,13 +23,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "../ui/avatar";
+} from "../ui/dropdown-menu"; 
+import { Avatar, AvatarFallback } from "../ui/avatar"; 
 import { logoutUser } from "@/store/auth-slice";
-import UserCartWrapper from "./cart-wrapper";
+import UserCartWrapper from "./cart-wrapper"; 
 import { useEffect, useState } from "react";
 import { fetchCartItems } from "@/store/shop/cart-slice";
-import { Label } from "../ui/label";
+import { Label } from "../ui/label"; 
 
 function MenuItems() {
   const navigate = useNavigate();
@@ -42,19 +49,22 @@ function MenuItems() {
 
     sessionStorage.setItem("filters", JSON.stringify(currentFilter));
 
-    location.pathname.includes("listing") && currentFilter !== null
-      ? setSearchParams(
-          new URLSearchParams(`?category=${getCurrentMenuItem.id}`)
-        )
-      : navigate(getCurrentMenuItem.path);
+    if (location.pathname.includes("listing") && currentFilter !== null) {
+      setSearchParams(
+        new URLSearchParams(`?category=${getCurrentMenuItem.id}`)
+      );
+    } else {
+      navigate(getCurrentMenuItem.path);
+    }
   }
 
   return (
-    <nav className="flex flex-col mb-3 lg:mb-0 lg:items-center gap-6 lg:flex-row">
+    
+    <nav className="flex flex-col lg:flex-row items-start lg:items-center gap-4 lg:gap-6">
       {shoppingViewHeaderMenuItems.map((menuItem) => (
         <Label
           onClick={() => handleNavigate(menuItem)}
-          className="text-sm font-medium cursor-pointer"
+          className="text-md font-medium cursor-pointer hover:opacity-50" 
           key={menuItem.id}
         >
           {menuItem.label}
@@ -76,26 +86,30 @@ function HeaderRightContent() {
   }
 
   useEffect(() => {
-    dispatch(fetchCartItems(user?.id));
-  }, [dispatch]);
+    if (user?.id) { 
+        dispatch(fetchCartItems(user?.id));
+    }
+  }, [dispatch, user?.id]); 
 
-  console.log(cartItems, "Nilufa");
 
   return (
-    <div className="flex lg:items-center lg:flex-row flex-col gap-4">
-      <Sheet open={openCartSheet} onOpenChange={() => setOpenCartSheet(false)}>
-        <Button
+    
+    <div className="flex flex-col items-start lg:flex-row lg:items-center gap-4 mt-4 lg:mt-0">
+      <Sheet open={openCartSheet} onOpenChange={setOpenCartSheet}> 
+        <button
           onClick={() => setOpenCartSheet(true)}
-          variant="outline"
-          size="icon"
-          className="relative"
+          className="relative p-1" 
+          id="cart-btn"
+          aria-label="Open cart"
         >
-          <ShoppingCart className="w-6 h-6" />
-          <span className="absolute top-[-5px] right-[2px] font-bold text-sm">
-            {cartItems?.items?.length || 0}
-          </span>
+          <ShoppingCart className="h-6 w-6 left-10" /> 
+          {cartItems?.items?.length > 0 && ( 
+            <span className="absolute top-[-3px] right-[8px] font-bold text-sm">
+              {cartItems.items.length}
+            </span>
+          )}
           <span className="sr-only">User cart</span>
-        </Button>
+        </button>
         <UserCartWrapper
           setOpenCartSheet={setOpenCartSheet}
           cartItems={
@@ -108,23 +122,23 @@ function HeaderRightContent() {
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Avatar className="bg-black">
-            <AvatarFallback className="bg-black text-white font-extrabold">
-              {user?.userName[0].toUpperCase()}
+          <Avatar className="bg-black cursor-pointer h-8 w-8"> 
+            <AvatarFallback className="bg-black text-white font-extrabold cursor-pointer text-sm"> 
+              {user?.userName ? user.userName[0].toUpperCase() : <User className="h-4 w-4"/>}
             </AvatarFallback>
           </Avatar>
         </DropdownMenuTrigger>
-        <DropdownMenuContent side="right" className="w-56">
-          <DropdownMenuLabel>Logged in as {user?.userName}</DropdownMenuLabel>
+        <DropdownMenuContent side="right" className="w-56" align="end">
+          <DropdownMenuLabel>Logged in as {user?.userName || "Guest"}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => navigate("/shop/account")}>
             <User className="mr-2 h-4 w-4" />
-            Account
+            <span>Account</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleLogout}>
             <LogOut className="mr-2 h-4 w-4" />
-            Logout
+            <span>Logout</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -133,33 +147,50 @@ function HeaderRightContent() {
 }
 
 function ShoppingHeader() {
-  const { isAuthenticated } = useSelector((state) => state.auth);
-
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background">
       <div className="flex h-16 items-center justify-between px-4 md:px-6">
-        <Link to="/shop/home" className="flex items-center gap-2">
-          <House className="h-6 w-6" />
-          <span className="font-bold">Luxora</span>
+        
+        <Link to="/shop/home" className="flex items-center gap-2 text-2xl pl-2">
+          <Slack className="h-6 w-6 text-black "  /> 
+          <span className="font-bold text-black">Luxora</span>
         </Link>
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="outline" size="icon" className="lg:hidden">
-              <Menu className="h-6 w-6" />
-              <span className="sr-only">Toggle header menu</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-full max-w-xs">
-            <MenuItems />
-            <HeaderRightContent />
-          </SheetContent>
-        </Sheet>
-        <div className="hidden lg:block">
+        
+        <div className="hidden lg:flex flex-1 justify-center"> 
           <MenuItems />
         </div>
 
-        <div className="hidden lg:block">
-          <HeaderRightContent />
+        
+        <div className="flex items-center"> 
+            <div className="hidden lg:flex"> 
+                <HeaderRightContent />
+            </div>
+
+            <div className="lg:hidden"> 
+            <Sheet>
+                <SheetTrigger asChild>
+                
+                <button variant="outline" size="icon" className="lg:hidden" style={{border:"none"}} aria-label="Open menu"> 
+                    <Menu className="h-6 w-6" />
+                    <span className="sr-only">Toggle header menu</span>
+                </button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-full max-w-xs"> 
+                <SheetHeader className="p-4 border-b"> 
+                    <SheetTitle className="text-lg font-semibold">
+                    Menu 
+                    </SheetTitle>
+                    <SheetDescription>
+                        Main navigation
+                    </SheetDescription>
+                </SheetHeader>
+                <div className="p-4"> 
+                    <MenuItems /> 
+                    <HeaderRightContent /> 
+                </div>
+                </SheetContent>
+            </Sheet>
+            </div>
         </div>
       </div>
     </header>

@@ -23,83 +23,122 @@ function ShoppingOrders() {
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-  const { orderList, orderDetails } = useSelector((state) => state.shopOrder);
+  const { orderList, orderDetails, isLoading, error } = useSelector((state) => state.shopOrder);
 
   function handleFetchOrderDetails(getId) {
     dispatch(getOrderDetails(getId));
   }
 
   useEffect(() => {
-    dispatch(getAllOrdersByUserId(user?.id));
-  }, [dispatch]);
+    if (user?.id) {
+      dispatch(getAllOrdersByUserId(user?.id));
+    }
+  }, [dispatch, user?.id]);
 
   useEffect(() => {
-    if (orderDetails !== null) setOpenDetailsDialog(true);
+    if (orderDetails !== null) {
+      setOpenDetailsDialog(true);
+    }
   }, [orderDetails]);
 
-  console.log(orderDetails, "orderDetails");
+  if (isLoading && (!orderList || orderList.length === 0)) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Order History</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p className="text-center text-muted-foreground py-8">Loading your orders...</p>
+            </CardContent>
+        </Card>
+    );
+  }
+
+  if (error) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Order History</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p className="text-center text-red-500 py-8">Error loading orders: {error}</p>
+            </CardContent>
+        </Card>
+    );
+  }
 
   return (
-    <Card>
+    <Card className="shadow-lg">
       <CardHeader>
-        <CardTitle>Order History</CardTitle>
+        <CardTitle className="text-2xl font-semibold">Order History</CardTitle>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Order ID</TableHead>
-              <TableHead>Order Date</TableHead>
-              <TableHead>Order Status</TableHead>
-              <TableHead>Order Price</TableHead>
-              <TableHead>
-                <span className="sr-only">Details</span>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {orderList && orderList.length > 0
-              ? orderList.map((orderItem) => (
-                  <TableRow>
-                    <TableCell>{orderItem?._id}</TableCell>
-                    <TableCell>{orderItem?.orderDate.split("T")[0]}</TableCell>
-                    <TableCell>
-                      <Badge
-                        className={`py-1 px-3 ${
-                          orderItem?.orderStatus === "confirmed"
-                            ? "bg-green-500"
-                            : orderItem?.orderStatus === "rejected"
-                            ? "bg-red-600"
-                            : "bg-black"
-                        }`}
-                      >
-                        {orderItem?.orderStatus}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>${orderItem?.totalAmount}</TableCell>
-                    <TableCell>
-                      <Dialog
-                        open={openDetailsDialog}
-                        onOpenChange={() => {
+        {orderList && orderList.length > 0 ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[200px]">Order ID</TableHead>
+                <TableHead>Order Date</TableHead>
+                <TableHead>Order Status</TableHead>
+                <TableHead className="text-right">Order Price</TableHead>
+                <TableHead className="text-right">
+                  <span className="sr-only">Details</span>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {orderList.map((orderItem) => (
+                <TableRow key={orderItem._id}>
+                  <TableCell className="font-medium truncate w-[200px]">{orderItem?._id}</TableCell>
+                  <TableCell>{orderItem?.orderDate ? new Date(orderItem.orderDate).toLocaleDateString() : 'N/A'}</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        orderItem?.orderStatus === "confirmed" || orderItem?.orderStatus === "paid"
+                          ? "success"
+                          : orderItem?.orderStatus === "delivered"
+                          ? "default"
+                          : orderItem?.orderStatus === "processing" || orderItem?.orderStatus === "pending_payment"
+                          ? "secondary"
+                          : "destructive"
+                      }
+                    >
+                      {orderItem?.orderStatus}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">${orderItem?.totalAmount?.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">
+                    <Dialog
+                      open={openDetailsDialog && orderDetails?._id === orderItem._id}
+                      onOpenChange={(isOpen) => {
+                        if (!isOpen) {
                           setOpenDetailsDialog(false);
                           dispatch(resetOrderDetails());
+                        }
+                      }}
+                    >
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                            setOpenDetailsDialog(true);
+                            handleFetchOrderDetails(orderItem?._id);
                         }}
                       >
-                        <Button
-                          onClick={() =>
-                            handleFetchOrderDetails(orderItem?._id)
-                          }
-                        >
-                          View Details
-                        </Button>
+                        View Details
+                      </Button>
+                      {orderDetails && orderDetails._id === orderItem._id && (
                         <ShoppingOrderDetailsView orderDetails={orderDetails} />
-                      </Dialog>
-                    </TableCell>
-                  </TableRow>
-                ))
-              : null}
-          </TableBody>
-        </Table>
+                      )}
+                    </Dialog>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <p className="text-center text-muted-foreground py-10">You have no orders yet.</p>
+        )}
       </CardContent>
     </Card>
   );
