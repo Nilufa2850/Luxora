@@ -1,6 +1,8 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 
+const API_URL = import.meta.env.VITE_API_BASE_URL;
+
 const initialState = {
   approvalURL: null,
   isLoading: false,
@@ -15,12 +17,12 @@ export const createNewOrder = createAsyncThunk(
   async (orderData, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/shop/order/create",
+        `${API_URL}/shop/order/create`,
         orderData
       );
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || { message: error.message });
+      return rejectWithValue(error.response?.data || { message: error.message, success: false });
     }
   }
 );
@@ -30,7 +32,7 @@ export const capturePayment = createAsyncThunk(
   async ({ paymentId, PayerID, orderId }, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/shop/order/capture",
+        `${API_URL}/shop/order/capture`,
         {
           paymentId,
           PayerID,
@@ -39,7 +41,7 @@ export const capturePayment = createAsyncThunk(
       );
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || { message: error.message });
+      return rejectWithValue(error.response?.data || { message: error.message, success: false });
     }
   }
 );
@@ -47,13 +49,16 @@ export const capturePayment = createAsyncThunk(
 export const getAllOrdersByUserId = createAsyncThunk(
   "/order/getAllOrdersByUserId",
   async (userId, { rejectWithValue }) => {
+    if (!userId) {
+        return rejectWithValue({ message: "User ID not provided for fetching orders.", success: false });
+    }
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/shop/order/list/${userId}`
+        `${API_URL}/shop/order/list/${userId}`
       );
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || { message: error.message });
+      return rejectWithValue(error.response?.data || { message: error.message, success: false });
     }
   }
 );
@@ -61,13 +66,16 @@ export const getAllOrdersByUserId = createAsyncThunk(
 export const getOrderDetails = createAsyncThunk(
   "/order/getOrderDetails",
   async (id, { rejectWithValue }) => {
+    if (!id) {
+        return rejectWithValue({ message: "Order ID not provided for fetching details.", success: false });
+    }
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/shop/order/details/${id}`
+        `${API_URL}/shop/order/details/${id}`
       );
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || { message: error.message });
+      return rejectWithValue(error.response?.data || { message: error.message, success: false });
     }
   }
 );
@@ -82,7 +90,7 @@ const shoppingOrderSlice = createSlice({
     clearApprovalURL: (state) => {
       state.approvalURL = null;
     },
-    clearOrderError: (state) => {
+    clearShopOrderError: (state) => {
         state.error = null;
     }
   },
@@ -122,17 +130,13 @@ const shoppingOrderSlice = createSlice({
         state.isLoading = false;
         if (action.payload?.success) {
           state.orderDetails = action.payload.data;
-          // Toast notifications are typically handled in components after dispatch
-          // toast.success(action.payload.message || "Payment successful!");
         } else {
           state.error = action.payload?.message || "Payment capture failed.";
-          // toast.error(action.payload?.message || "Payment capture failed.");
         }
       })
       .addCase(capturePayment.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload?.message || action.error?.message || "Payment capture failed.";
-        // toast.error(action.payload?.message || action.error?.message || "Payment capture failed.");
       })
       .addCase(getAllOrdersByUserId.pending, (state) => {
         state.isLoading = true;
@@ -144,13 +148,13 @@ const shoppingOrderSlice = createSlice({
             state.orderList = action.payload.data;
         } else {
             state.orderList = [];
-            state.error = action.payload?.message || "Failed to fetch orders.";
+            state.error = action.payload?.message || "Failed to fetch user orders.";
         }
       })
       .addCase(getAllOrdersByUserId.rejected, (state, action) => {
         state.isLoading = false;
         state.orderList = [];
-        state.error = action.payload?.message || action.error?.message || "Failed to fetch orders.";
+        state.error = action.payload?.message || action.error?.message || "Failed to fetch user orders.";
       })
       .addCase(getOrderDetails.pending, (state) => {
         state.isLoading = true;
@@ -173,6 +177,6 @@ const shoppingOrderSlice = createSlice({
   },
 });
 
-export const { resetOrderDetails, clearApprovalURL, clearOrderError } = shoppingOrderSlice.actions;
+export const { resetOrderDetails, clearApprovalURL, clearShopOrderError } = shoppingOrderSlice.actions;
 
 export default shoppingOrderSlice.reducer;

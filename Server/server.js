@@ -1,3 +1,4 @@
+require('dotenv').config();
 
 const express = require("express");
 const mongoose = require("mongoose");
@@ -13,12 +14,13 @@ const shopAddressRouter = require("./routes/shop/address-routes");
 const shopOrderRouter = require("./routes/shop/order-routes");
 const shopSearchRouter = require("./routes/shop/search-routes");
 const shopReviewRouter = require("./routes/shop/review-routes");
-require('dotenv').config();
+
 
 const commonFeatureRouter = require("./routes/common/feature-routes");
 
 
-const URL = 'mongodb+srv://yasminnilufayasmin:3L6G9SAd8YXmCtdk@cluster0.dnw9fvh.mongodb.net/' ;
+// const URL = 'mongodb+srv://yasminnilufayasmin:3L6G9SAd8YXmCtdk@cluster0.dnw9fvh.mongodb.net/' ;
+const URL = process.env.MONGODB_URL;
 
 
 mongoose
@@ -60,7 +62,4 @@ app.use("/api/shop/review", shopReviewRouter);
 app.use("/api/common/feature", commonFeatureRouter);
 
 app.listen(PORT, () => console.log(`Server is now running on port ${PORT}`));
-
-
-
 
